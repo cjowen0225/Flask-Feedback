@@ -1,12 +1,14 @@
-from flask import Flask, render_tempate, redirect, session
+from flask import Flask, render_template, redirect, session
 from flask_debugtoolbar import DebugToolbarExtension
 from werkzeug.exceptions import Unauthorized
-from models import connect_db, db, User, """Feedback"""
+from models import connect_db, db, User, Feedback
 from forms import RegisterForm, LoginForm, FeedbackForm, DeleteForm
+from flask_wtf import FlaskForm
+from flask_cors import CORS
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgres:///flask-feedback"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql:///flask_feedback"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['SECRET_KEY'] = "ASecret"
@@ -29,21 +31,21 @@ def register():
     if "username" in session:
         return redirect (f"/users/{session['username']}")
 
-        form = RegisterForm()
+    form = RegisterForm()
 
-        if form.validate_on_submit():
-            username = form.username.data
-            password = form.password.data
-            first_name = form.first_name.data
-            last_name = form.last_name.data
-            email = form.email.data
-            user = User.register(username, password, first_name, last_name, email)
-            db.session.commit()
-            session['username'] = user.username
-            return redirect(f"/users/{user.username}")
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        first_name = form.first_name.data
+        last_name = form.last_name.data
+        email = form.email.data
+        user = User.register(username, password, first_name, last_name, email)
+        db.session.commit()
+        session['username'] = user.username
+        return redirect(f"/users/{user.username}")
 
-        else:
-            return render_template("users/register.html", form=form)
+    else:
+        return render_template("users/register.html", form=form)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -100,7 +102,7 @@ def delete_user(username):
     session.pop("username")
     return redirect("/login")
 
-@app.route("/users/<username>/feedback/new")
+@app.route("/users/<username>/feedback/new", methods=["GET", "POST"])
 def new_feedback(username):
     """Show and handle feedback form"""
 
@@ -121,16 +123,16 @@ def new_feedback(username):
     else:
         return render_template("feedback/new.html", form=form)
 
-@app.route("/feedback/<int:feedback_id>/update", methods=["GET", "POST"])
+@app.route("/feedback/<int:feedback_id>/edit", methods=["GET", "POST"])
 def update_feedback(feedback_id):
     """Show and handle update Feedback form"""
 
     feedback = Feedback.query.get(feedback_id)
 
-    if "username" not in session or username != session["username"]:
+    if "username" not in session or feedback.username != session["username"]:
         raise Unauthorize()
 
-    form = FeedbackForm(abj=feedback)
+    form = FeedbackForm(obj=feedback)
 
     if form.validate_on_submit():
         feedback.title = form.title.data
@@ -138,14 +140,14 @@ def update_feedback(feedback_id):
         db.session.commit()
         return redirect(f"/users/{feedback.username}")
     
-    return render_template("/feedback/<edit.html>", form, feedback=feedback)
+    return render_template("/feedback/edit.html", form=form, feedback=feedback)
 
-@app.route("/feedback/<int:feedback_id>/delete", methods=["GET", "POST"])
+@app.route("/feedback/<int:feedback_id>/delete", methods=["POST"])
 def delete_feedback(feedback_id):
     """Delete Feedback"""
 
     feedback = Feedback.query.get(feedback_id)
-    if "username" not in session or username != session['username']:
+    if "username" not in session or feedback.username != session['username']:
         raise Unauthorized()
 
     form = DeleteForm()

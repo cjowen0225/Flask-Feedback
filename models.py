@@ -12,12 +12,12 @@ def connect_db(app):
     db.app = app
     db.init_app(app)
 
-class User(db.model):
+class User(db.Model):
     """User"""
 
     __tablename__ = "users"
 
-    username = db.Column(db.string(20), nullable=False, unique=True, primary_key=True)
+    username = db.Column(db.String(20), nullable=False, unique=True, primary_key=True)
     password = db.Column(db.Text, nullable=False)
     email = db.Column(db.String(50), nullable=False)
     first_name = db.Column(db.String(30), nullable=False)
@@ -36,7 +36,7 @@ class User(db.model):
         return user
 
     @classmethod
-    def autheticate(cls, username, password):
+    def authenticate(cls, username, password):
         """Check if the username and password are correct"""
 
         user = User.query.filter_by(username=username).first()
@@ -45,7 +45,7 @@ class User(db.model):
         else:
             return False
 
-class Feedback(db.model):
+class Feedback(db.Model):
     """Feedback"""
 
     __tablename__ = "feedback"
