@@ -1,0 +1,11 @@
+bcrypt==3.1.4
+Flask==1.0.2
+Flask-Bcrypt==0.7.1
+Flask-DebugToolbar==0.10.1
+Flask-SQLAlchemy==2.3.2
+Flask-WTF==0.14.2
+Jinja2==2.10
+psycopg2-binary==2.7.5
+SQLAlchemy==1.2.12
+Werkzeug==0.14.1
+WTForms==2.2.1
